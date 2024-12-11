@@ -37,9 +37,9 @@ git clone https://github.com/GeoTeG77/thumbnail.git
 myapp  | time=2024-12-11T17:08:51.456Z level=INFO msg="Repository layer successfully create!"      
 myapp  | time=2024-12-11T17:08:51.456Z level=INFO msg="Service layer successfully create!"
 myapp  | time=2024-12-11T17:08:51.456Z level=INFO msg="GRPC-server started successfully"
-
 Теперь вы можете войти внутрь контейнера при помощи: docker exec -it myapp /bin/sh
-2. После этого рекомендую запустить следующие команды для тестирования:
+
+3. После этого рекомендую запустить следующие команды для тестирования:
 /usr/local/bin/client --async https://www.youtube.com/watch?v=tPiagp9t5is
 /usr/local/bin/client --async https://www.youtube.com/watch?v=tPiagp9t5is,https://www.youtube.com/watch?v=dmx_8jo0eqE
 /usr/local/bin/client https://www.youtube.com/watch?v=tPiagp9t5is,https://www.youtube.com/watch?v=dmx_8jo0eqE
@@ -47,7 +47,7 @@ myapp  | time=2024-12-11T17:08:51.456Z level=INFO msg="GRPC-server started succe
 /usr/local/bin/client --async https://www.youtube.com/watch?v=<id_video>,https://www.youtube.com/watch?v=<id_video>,...
 /usr/local/bin/client https://www.youtube.com/watch?v=<id_video>,https://www.youtube.com/watch?v=<id_video>,...
 
-3. При правильной работе программы вы увидите подобные сообщения в Stdout:
+4. При правильной работе программы вы увидите подобные сообщения в Stdout:
 myapp  | time=2024-12-11T17:35:57.768Z level=ERROR msg="Cache miss for URL" url="https://www.youtube.com/watch?v=dmx_8jo0eqE"
 myapp  | time=2024-12-11T17:35:57.797Z level=INFO msg="Saved thumbnail in Cache for url:" url="https://www.youtube.com/watch?v=dmx_8jo0eqE"
 myapp  | time=2024-12-11T17:35:57.797Z level=INFO msg="Successfully take thumbnail from YouTube" url="https://www.youtube.com/watch?v=dmx_8jo0eqE"
