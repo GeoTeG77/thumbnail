@@ -1,0 +1,35 @@
+syntax = "proto3";
+package proto;
+option go_package = "/proto";
+
+
+
+service ThumbnailService {
+
+  rpc GetThumbnail (ThumbnailRequest) returns (ThumbnailResponse);
+  rpc GetThumbnails (ThumbnailsRequest) returns (ThumbnailsResponse);
+}
+
+message ThumbnailRequest {
+  string url = 1;
+}
+
+message ThumbnailResponse {
+  bytes image_data = 1;
+  string url = 2;
+  string error = 3;
+}
+
+message ThumbnailsRequest {
+  repeated string urls = 1;
+}
+
+message ThumbnailsResponse {
+  repeated ThumbnailResult results = 1;
+}
+
+message ThumbnailResult {
+  string url = 1;
+  bytes image_data = 2;
+  string error = 3;
+}
