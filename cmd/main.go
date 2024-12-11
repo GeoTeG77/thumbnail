@@ -1,64 +1,65 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
+
 	"thumbnail/internal/config"
 	"thumbnail/internal/http/handlers"
 	"thumbnail/internal/http/router"
 	"thumbnail/internal/proto/server"
 	"thumbnail/internal/repository"
 	"thumbnail/internal/service"
-	cache "thumbnail/internal/storage/cache"
+	"thumbnail/internal/storage/cache"
 )
 
 func main() {
-
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 	slog.SetDefault(logger)
 
-	err := config.LoadConfig()
-	if err != nil {
-		slog.Debug("Failed to init config file")
-		slog.Error(err.Error())
+	if err := run(); err != nil {
+		slog.Error("Application failed", "error", err)
 		os.Exit(1)
+	}
+}
+
+func run() error {
+	if err := config.LoadConfig(); err != nil {
+		return fmt.Errorf("failed to load config: %w", err)
 	}
 
 	db, err := cache.Init()
 	if err != nil {
-		slog.Debug("Failed to init DB")
-		slog.Error(err.Error())
-		os.Exit(1)
+		return fmt.Errorf("failed to initialize database: %w", err)
 	}
 
-	repository, err := repository.NewThumbnailRepository(db)
+	thumbnailRepo, err := repository.NewThumbnailRepository(db)
 	if err != nil {
-		slog.Debug("Failed to create thumbnail repository")
-		slog.Error(err.Error())
-		os.Exit(1)
+		return fmt.Errorf("failed to create thumbnail repository: %w", err)
 	}
 
-	service, err := service.NewThumbnailService(repository)
+	thumbnailService, err := service.NewThumbnailService(thumbnailRepo)
 	if err != nil {
-		slog.Debug("Failed to create thumbnail service")
-		slog.Error(err.Error())
-		os.Exit(1)
+		return fmt.Errorf("failed to create thumbnail service: %w", err)
 	}
 
-	handler := handlers.NewThumbnailHandler(service)
+	handler := handlers.NewThumbnailHandler(thumbnailService)
 	router := router.NewRouter(handler)
+	errCh := make(chan error, 1)
 
 	go func() {
-		if err := server.Run(":50051", handler); err != nil {
-			log.Fatalf("Error running gRPC server: %v", err)
+		if err := server.Run(os.Getenv("GRPC_PORT"), handler); err != nil {
+			errCh <- fmt.Errorf("gRPC server error: %w", err)
 		}
 	}()
 
-	err = http.ListenAndServe(":8080", router)
-	if err != nil {
-		log.Fatal("Error starting server: ", err)
-	}
+	go func() {
+		if err := http.ListenAndServe(os.Getenv("HTTP_PORT"), router); err != nil {
+			errCh <- fmt.Errorf("HTTP server error: %w", err)
+		}
+	}()
 
+	return <-errCh
 }

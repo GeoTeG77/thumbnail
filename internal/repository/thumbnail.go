@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	cache "thumbnail/internal/storage/cache"
+	"os"
 	"time"
+
+	"thumbnail/internal/storage/cache"
 )
 
 type Repository struct {
@@ -24,7 +26,7 @@ func NewThumbnailRepository(storage *cache.Storage) (*Repository, error) {
 
 func (r *Repository) GetThumbnail(ctx context.Context, url string) ([]byte, error) {
 	if url == "" {
-		return nil, errors.New("videoID must not be empty")
+		return nil, errors.New("url can't be empty")
 	}
 
 	data, err := r.Storage.Rdb.Get(ctx, url).Result()
@@ -41,11 +43,17 @@ func (r *Repository) GetThumbnail(ctx context.Context, url string) ([]byte, erro
 
 func (r *Repository) SetThumbnail(ctx context.Context, url string, thumbnail []byte) error {
 	if url == "" {
-		return errors.New("videoID must not be empty")
+		return errors.New("url can't be empty")
 	}
 
-	ttl := 5 * time.Minute
-	err := r.Storage.Rdb.Set(ctx, url, thumbnail, ttl).Err()
+	durationStr := os.Getenv("TTL")
+
+	ttl, err := time.ParseDuration(durationStr)
+	if err != nil {
+		return err
+	}
+
+	err = r.Storage.Rdb.Set(ctx, url, thumbnail, ttl).Err()
 	if err != nil {
 		return err
 	}

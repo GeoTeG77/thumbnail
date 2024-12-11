@@ -25,11 +25,11 @@ func Init() (*Storage, error) {
 	}
 
 	if redisPort == "" {
-		redisPort = "6379"
+		redisPort = os.Getenv("DEFAULT_REDIS_PORT")
 	}
 
 	if redisDB == "" {
-		redisDB = "0"
+		redisDB = os.Getenv("DEFAULT_REDIS_DB")
 	}
 
 	numDB, err := strconv.Atoi(redisDB)
@@ -37,9 +37,7 @@ func Init() (*Storage, error) {
 		return nil, err
 	}
 
-	Addr := redisHost+""+redisPort
-
-	//Addr = fmt.Sprintf("%s:%s", redisHost, redisPort)
+	Addr := redisHost+":"+redisPort
 
 	client := redis.NewClient(&redis.Options{
 		Addr:     Addr,

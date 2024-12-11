@@ -9,9 +9,10 @@ import (
 	"strings"
 	"sync"
 
-	proto "thumbnail/internal/proto/proto"
-
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	"thumbnail/internal/proto/proto"
 )
 
 func main() {
@@ -24,7 +25,7 @@ func main() {
 
 	urls := strings.Split(flag.Arg(0), ",")
 
-	conn, err := grpc.NewClient("localhost:50051")
+	conn, err := grpc.Dial(os.Getenv("GPRC_LOCAL"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Failed to connect to server: %v", err)
 	}
